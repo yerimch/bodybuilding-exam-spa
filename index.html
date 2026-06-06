@@ -19,9 +19,14 @@
     <header class="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3 z-30 shadow-sm">
         <div class="flex justify-between items-center mb-2">
             <h1 class="text-lg font-black text-slate-900 tracking-tight">🏋️‍♂️ 생체 2급 실기 마스터</h1>
-            <button onclick="resetAllProgress()" class="text-xs font-bold text-red-500 bg-red-50 px-2.5 py-1.5 rounded-lg active:bg-red-100 transition-colors">
-                전체 초기화
-            </button>
+            <div class="flex gap-2">
+                <button onclick="shuffleCurrentTab()" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg active:bg-indigo-100 transition-colors">
+                    🔀 현재 부위 섞기
+                </button>
+                <button onclick="resetAllProgress()" class="text-xs font-bold text-red-500 bg-red-50 px-2.5 py-1.5 rounded-lg active:bg-red-100 transition-colors">
+                    초기화
+                </button>
+            </div>
         </div>
         <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden flex">
             <div id="main-progress" class="bg-indigo-600 h-full transition-all duration-300" style="width: 0%"></div>
@@ -33,11 +38,14 @@
     </header>
 
     <nav class="sticky top-[73px] bg-slate-50 border-b border-slate-200 p-2 flex gap-1.5 overflow-x-auto no-scrollbar z-20">
-        <button onclick="switchTab('bookmark')" data-tab="bookmark" class="tab-btn shrink-0 text-xs font-black px-4 py-2.5 rounded-full bg-amber-500 text-white shadow-sm transition-all">📌 헷갈리는 자세 모음</button>
+        <button onclick="switchTab('bookmark')" data-tab="bookmark" class="tab-btn shrink-0 text-xs font-black px-4 py-2.5 rounded-full bg-amber-500 text-white shadow-sm transition-all">📌 헷갈리는 자세</button>
         <div class="w-[1px] bg-slate-300 my-1 shrink-0"></div>
-        <button onclick="switchTab('all')" data-tab="all" class="tab-btn shrink-0 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-slate-600 border border-slate-200 transition-all">전체보기</button>
-        <button onclick="switchTab('back-biceps')" data-tab="back-biceps" class="tab-btn shrink-0 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-slate-600 border border-slate-200 transition-all">🔥 등 + 이두</button>
-        <button onclick="switchTab('chest-triceps')" data-tab="chest-triceps" class="tab-btn shrink-0 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-slate-600 border border-slate-200 transition-all">⚡ 가슴 + 삼두</button>
+        <button onclick="switchTab('all')" data-tab="all" class="tab-btn shrink-0 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-slate-600 border border-slate-200 transition-all">전체</button>
+        <button onclick="switchTab('chest')" data-tab="chest" class="tab-btn shrink-0 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-slate-600 border border-slate-200 transition-all">가슴</button>
+        <button onclick="switchTab('back')" data-tab="back" class="tab-btn shrink-0 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-slate-600 border border-slate-200 transition-all">등</button>
+        <button onclick="switchTab('biceps')" data-tab="biceps" class="tab-btn shrink-0 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-slate-600 border border-slate-200 transition-all">이두</button>
+        <button onclick="switchTab('triceps')" data-tab="triceps" class="tab-btn shrink-0 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-slate-600 border border-slate-200 transition-all">삼두</button>
+        <button onclick="switchTab('forearm')" data-tab="forearm" class="tab-btn shrink-0 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-slate-600 border border-slate-200 transition-all">전완</button>
         <button onclick="switchTab('shoulder')" data-tab="shoulder" class="tab-btn shrink-0 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-slate-600 border border-slate-200 transition-all">어깨</button>
         <button onclick="switchTab('abs')" data-tab="abs" class="tab-btn shrink-0 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-slate-600 border border-slate-200 transition-all">복부</button>
         <button onclick="switchTab('legs')" data-tab="legs" class="tab-btn shrink-0 text-xs font-bold px-4 py-2.5 rounded-full bg-white text-slate-600 border border-slate-200 transition-all">하체</button>
@@ -47,110 +55,162 @@
         </main>
 
     <script>
-        // DATA OBJECT
+        // RAW DATA (100% 개별 종목 구분 데이터셋)
         const exerciseData = [
-            // 등 (Back)
-            { id: "ex1", category: "back-biceps", sub: "등", name: "컨벤셔널 데드리프트", items: ["바를 어깨너비 혹은 약간 넓게 잡고 있는가?", "바벨을 바닥에 완전히(바닥) 내렸다가 올렸는가?", "운동하는 동안 등이 굽지 않도록 곧게 편 자세를 유지하는가?", "운동 동작 시 바벨이 대퇴부에서 떨어지지 않고 가까이 위치하여 내렸다가 올려지는가?", "바벨을 들어 올렸을 때 허리와 등을 과신전하지 않도록 주의했는가?", "바벨을 들어 올렸을 때 호흡을 내쉬는가?"] },
-            { id: "ex2", category: "back-biceps", sub: "등", name: "루마니안 데드리프트", items: ["두 발은 어깨 넓이로 벌리고 있는가?", "바를 어깨너비 혹은 약간 넓게 잡고 있는가?", "바벨을 무릎의 살짝 밑부분 지점까지만 내렸다가 올렸는가?", "동작 내내 바벨이 대퇴부에서 떨어지지 않고 가까이에 위치 하는가?", "운동 동작 시 척추 중립 자세를 유지 했는가?", "내리는 동작에서 무릎이 고정되어 있는가?", "들어 올렸을 때 상체를 과신전 하지 않도록 주의했는가?", "바벨을 들어 올렸을 때 호흡을 내쉬는가?"] },
-            { id: "ex3", category: "back-biceps", sub: "등", name: "벤트오버 바벨 로우", items: ["두 발을 어깨너비로 벌리고 스탠다드 오버핸드 그립으로 바벨을 잡았는가?", "상체는 수평보다 약간 높은 각도를 유지하는가?", "수축 시 견갑골이 서로 가까워지도록 어깨를 후방으로 모았는가?", "바벨을 당김과 동시에 상체를 세우지 않도록 주의했는가?", "허리는 곧게 펴져 있는가?", "바벨이 배꼽부위에 닿을 만큼 당겼을 때 호흡을 내쉬는가?"] },
-            { id: "ex4", category: "back-biceps", sub: "등", name: "언더그립 바벨 로우", items: ["두 발을 어깨너비로 벌리고 스탠다드 언더그립으로 바벨을 잡았는가?", "상체는 수평보다 약간 높은 각도를 유지했는가?", "수축 시 견갑골이 서로 가까워지도록 어깨를 후방으로 모았는가?", "허리는 곧게 펴져 있는가?", "바벨이 하복부에 닿을 만큼 당겼을 때 호흡을 내쉬는가?"] },
-            { id: "ex5", category: "back-biceps", sub: "등", name: "뉴트럴 그립 투암 덤벨 로우", items: ["두 발을 어깨너비로 벌리고 무릎을 살짝 굽힌 상태에서 상체를 45°-60° 정도 숙였는가?", "양 손에 덤벨을 뉴트럴 그립으로 잡고 옆구리 쪽으로 당겼는가?", "손목은 구부리지 않고 편 상태를 유지했는가?", "운동 동작 시 척추 중립 자세를 유지 했는가?", "덤벨을 당겼을 때 호흡을 내쉬는가?"] },
-            { id: "ex6", category: "back-biceps", sub: "등", name: "벤트오버 원암 덤벨 로우", items: ["벤치옆에 서서 한쪽 무릎과 손을 벤치 위에 올렸는가?", "다른 한 손은 뉴트럴 그립으로 덤벨을 잡았는가?", "덤벨을 옆구리 쪽으로 끌어 올리듯 들어 올렸는가?", "손목은 구부리지 않고 편 상태를 유지했는가?", "척추는 중립 자세를 유지했는가?", "덤벨을 당겼을 때 호흡을 내쉬는가?"] },
-            { id: "ex7", category: "back-biceps", sub: "등", name: "바벨 쉬러그", items: ["어깨너비로(어깨너비보다 약간 좁게) 서서 바벨을 어깨너비 스탠다드 오버 그립으로 잡았는가?", "등을 곧게 펴고 있는가?", "동작 시 팔꿈치를 너무 구부리지 않았는가?", "어깨를 끌어올렸을 때 호흡을 내쉬는가?"] },
-            { id: "ex8", category: "back-biceps", sub: "등", name: "덤벨 쉬러그", items: ["어깨너비로(어깨너비보다 약간 좁게) 서서 양손에 덤벨을 들고 있는가?", "등을 곧게 펴고 있는가?", "동작 시 팔꿈치를 너무 구부리지 않았는가?", "어깨를 끌어올렸을 때 호흡을 내쉬는가?"] },
-            { id: "ex9", category: "back-biceps", sub: "등", name: "바벨 굿모닝 엑서사이즈", items: ["양발은 내로우 스탠스로 평행하게 위치시켰는가?", "바벨을 승모근에 올리고 있는가?", "척추는 중립 자세를 유지했는가?", "상체를 숙였을 때 무릎을 살짝 구부리고 허리는 곧게 펼쳐져 있는가?", "시선은 전방을 주시하는가?", "올라올 때 호흡을 내쉬고 있는가?"] },
-            
-            // 이두 (Biceps)
-            { id: "ex10", category: "back-biceps", sub: "이두", name: "스탠딩 바벨 컬", items: ["두 발을 어깨너비로 벌리고 서서 스탠다드 언더핸드그립으로 바벨을 잡았는가?", "팔꿈치가 어깨 뒤로 빠지지 않게 고정하고 있는가?", "바벨을 내릴 때 어깨가 움직이지 않고 팔꿈치가 펴졌는가?", "호흡은 바를 내릴 때 들이마시고 올릴 때 내쉬었는가?"] },
-            { id: "ex11", category: "back-biceps", sub: "이두", name: "스탠딩 리버스 바벨 컬", items: ["두 발을 어깨너비로 벌리고 서서 오버 그립으로 바벨을 잡았는가?", "바벨을 들어올릴 때 어깨가 움직이지 않고 팔꿈치가 몸통에 잘 고정되었는가?", "호흡은 바를 내릴 때 들이마시고 올릴 때 내쉬었는가?"] },
-            { id: "ex12", category: "back-biceps", sub: "이두", name: "스탠딩 덤벨 컬", items: ["두 발을 어깨너비로 벌리고 서서 스탠다드 언더핸드그립으로 덤벨을 잡았는가?", "팔꿈치가 어깨 뒤로 빠지지 않게 고정시켰는가?", "덤벨을 내릴 때 어깨를 움직이지 않고 팔꿈치를 폈는가?", "덤벨을 올릴 때 호흡을 내쉬고 있는가?"] },
-            { id: "ex13", category: "back-biceps", sub: "이두", name: "스탠딩 얼터네이트 덤벨 컬", items: ["두 발을 어깨너비로 벌리고 서서 스탠다드 언더핸드그립으로 덤벨을 잡았는가?", "양팔을 교대로 들어 올리는가?", "팔꿈치가 어깨 뒤로 빠지지 않도록 고정시켰는가?", "덤벨을 올릴 때 호흡을 내쉬고 내릴 때 들이마시고 있는가?"] },
-            { id: "ex14", category: "back-biceps", sub: "이두", name: "스탠딩 덤벨 해머 컬", items: ["두 발을 어깨너비로 벌리고 서서 덤벨을 뉴트럴 그립으로 잡았는가?", "팔꿈치가 어깨 뒤로 빠지지 않게 고정시켰는가?", "덤벨을 내릴 때 어깨를 움직이지 않고 팔꿈치를 폈는가?", "덤벨을 올릴 때 호흡을 내쉬고 내릴 때 들이마시고 있는가?"] },
-            { id: "ex15", category: "back-biceps", sub: "이두", name: "스탠딩 얼터네이트 해머 컬", items: ["두 발을 어깨너비로 벌리고 서서 덤벨을 뉴트럴 그립으로 잡았는가?", "양팔을 교대로 들어 올리는가?", "팔꿈치가 어깨 뒤로 빠지지 않도록 고정시켰는가?", "덤벨을 내릴 때 어깨를 움직이지 않고 팔꿈치를 폈는가?", "덤벨을 올릴 때 호흡을 내쉬고 내릴 때 들이마시고 있는가?"] },
-            { id: "ex16", category: "back-biceps", sub: "이두", name: "컨센트레이션 덤벨 컬", items: ["벤치에 앉아 뉴트럴 그립으로 덤벨을 잡았는가?", "덤벨을 잡은 손의 팔꿈치를 대퇴부 안쪽에 고정하였는가?", "반대편 손을 대퇴부에 고정시켜 상체를 안정적으로 지지하였는가?", "덤벨을 올릴 때 호흡을 내쉬고 있는가?"] },
+            // 가슴 [cite: 1, 2]
+            { id: "ex_ch_1", category: "chest", sub: "가슴", name: "플랫 바벨 벤치프레스", items: ["두 발은 바닥에 잘 고정되어 있는가?", "허리가 과도하게 꺾이지 않았는가?", "양손은 적당한 간격으로 바벨을 잡았는가?", "바벨을 들고 있을 때 가슴 위에 와 있는가?", "팔꿈치를 수직으로 구부려서 바벨을 가슴에 내렸는가?", "호흡은 바벨을 내릴 때 들이마시고, 올릴 때 내쉬었는가?"] },
+            { id: "ex_ch_2", category: "chest", sub: "가슴", name: "인클라인 바벨 벤치프레스", items: ["두 발바닥은 바닥에 잘 고정되어 있는가?", "허리가 과도하게 꺾이지 않았는가?", "양손은 적당한 간격으로 바벨을 잡았는가?", "팔꿈치를 수직으로 구부려서 바벨을 쇄골 쪽으로 내렸는가?", "호흡은 바벨을 내릴 때 들이마시고, 올릴 때 내쉬었는가?"] },
+            { id: "ex_ch_3", category: "chest", sub: "가슴", name: "플랫 덤벨 벤치프레스", items: ["두 발은 바닥에 잘 고정되어 있는가?", "허리가 과도하게 꺾이지 않았는가?", "양손은 적당한 간격으로 덤벨을 잡았는가?", "양손에 들고 있는 덤벨이 얼굴이 아닌 가슴 위에있는가?", "팔꿈치를 수직으로 구부려서 덤벨을 가슴 옆으로 내렸는가?", "호흡은 덤벨을 내릴 때 들이마시고, 올릴 때 내쉬었는가?"] },
+            { id: "ex_ch_4", category: "chest", sub: "가슴", name: "인클라인 덤벨 벤치프레스", items: ["두 발은 바닥에 잘 고정되어 있는가?", "허리가 과도하게 꺾이지 않았는가?", "양손에 들고 있는 덤벨이 얼굴이 아닌 가슴 위에있는가?", "팔꿈치를 수직으로 구부려서 덤벨을 가슴 옆에 내렸는가?", "호흡은 덤벨을 내릴 때 들이마시고, 올릴 때 내쉬었는가?"] },
+            { id: "ex_ch_5", category: "chest", sub: "가슴", name: "플랫 덤벨 플라이", items: ["두 발은 바닥에 잘 고정 시켰는가?", "허리가 과도하게 꺾이지 않았는가?", "뉴트럴 그립으로 잡았는가?", "덤벨을 반원으로 내릴 때 팔꿈치의 굽힘 정도가 적정한가?", "호흡은 덤벨을 내릴 때 들이마시고, 올릴 때 내쉬었는가?"] },
+            { id: "ex_ch_6", category: "chest", sub: "가슴", name: "플랫 덤벨 풀오버", items: ["두 발은 바닥에 잘 고정되어 있는가?", "양손을 모아 잡은 덤벨을 들어 올려 가슴 위쪽에 위치시켰는가?", "덤벨을 머리 뒤로 큰 원을 그리듯이 내렸는가?", "팔꿈치 관절을 충분히 연 상태에서 수직이 되도록 팔을 올렸는가?", "하위 구간에서 엉덩이가 들리지 않도록 주의하였는가?", "덤벨이 가슴 앞쪽으로 오면서 호흡을 내쉬었는가?"] },
 
-            // 가슴 (Chest)
-            { id: "ex17", category: "chest-triceps", sub: "가슴", name: "플랫 바벨 벤치프레스", items: ["두 발은 바닥에 잘 고정되어 있는가?", "허리가 과도하게 꺾이지 않았는가?", "양손은 적당한 간격으로 바벨을 잡았는가?", "바벨을 들고 있을 때 가슴 위에 와 있는가?", "팔꿈치를 수직으로 구부려서 바벨을 가슴에 내렸는가?", "호흡은 바벨을 내릴 때 들이마시고, 올릴 때 내쉬었는가?"] },
-            { id: "ex18", category: "chest-triceps", sub: "가슴", name: "인클라인 바벨 벤치프레스", items: ["두 발바닥은 바닥에 잘 고정되어 있는가?", "허리가 과도하게 꺾이지 않았는가?", "양손은 적당한 간격으로 바벨을 잡았는가?", "팔꿈치를 수직으로 구부려서 바벨을 쇄골 쪽으로 내렸는가?", "호흡은 바벨을 내릴 때 들이마시고, 올릴 때 내쉬었는가?"] },
-            { id: "ex19", category: "chest-triceps", sub: "가슴", name: "플랫 덤벨 벤치프레스", items: ["두 발은 바닥에 잘 고정되어 있는가?", "허리가 과도하게 꺾이지 않았는가?", "양손은 적당한 간격으로 덤벨을 잡았는가?", "양손에 들고 있는 덤벨이 얼굴이 아닌 가슴 위에있는가?", "팔꿈치를 수직으로 구부려서 덤벨을 가슴 옆으로 내렸는가?", "호흡은 덤벨을 내릴 때 들이마시고, 올릴 때 내쉬었는가?"] },
-            { id: "ex20", category: "chest-triceps", sub: "가슴", name: "인클라인 덤벨 벤치프레스", items: ["두 발은 바닥에 잘 고정되어 있는가?", "허리가 과도하게 꺾이지 않았는가?", "양손에 들고 있는 덤벨이 얼굴이 아닌 가슴 위에있는가?", "팔꿈치를 수직으로 구부려서 덤벨을 가슴 옆에 내렸는가?", "호흡은 덤벨을 내릴 때 들이마시고, 올릴 때 내쉬었는가?"] },
-            { id: "ex21", category: "chest-triceps", sub: "가슴", name: "플랫 덤벨 플라이", items: ["두 발은 바닥에 잘 고정 시켰는가?", "허리가 과도하게 꺾이지 않았는가?", "뉴트럴 그립으로 잡았는가?", "덤벨을 반원으로 내릴 때 팔꿈치의 굽힘 정도가 적정한가?", "호흡은 덤벨을 내릴 때 들이마시고, 올릴 때 내쉬었는가?"] },
-            { id: "ex22", category: "chest-triceps", sub: "가슴", name: "플랫 덤벨 풀오버", items: ["두 발은 바닥에 잘 고정되어 있는가?", "양손을 모아 잡은 덤벨을 들어 올려 가슴 위쪽에 위치시켰는가?", "덤벨을 머리 뒤로 큰 원을 그리듯이 내렸는가?", "팔꿈치 관절을 충분히 연 상태에서 수직이 되도록 팔을 올렸는가?", "하위 구간에서 엉덩이가 들리지 않도록 주의하였는가?", "덤벨이 가슴 앞쪽으로 오면서 호흡을 내쉬었는가?"] },
+            // 등 [cite: 1]
+            { id: "ex_bk_1", category: "back", sub: "등", name: "컨벤셔널 데드리프트", items: ["바를 어깨너비 혹은 약간 넓게 잡고 있는가?", "바벨을 바닥에 완전히(바닥) 내렸다가 올렸는가?", "운동하는 동안 등이 굽지 않도록 곧게 편 자세를 유지하는가?", "운동 동작 시 바벨이 대퇴부에서 떨어지지 않고 가까이 위치하여 내렸다가 올려지는가?", "바벨을 들어 올렸을 때 허리와 등을 과신전하지 않도록 주의했는가?", "바벨을 들어 올렸을 때 호흡을 내쉬는가?"] },
+            { id: "ex_bk_2", category: "back", sub: "등", name: "루마니안 데드리프트", items: ["두 발은 어깨 넓이로 벌리고 있는가?", "바를 어깨너비 혹은 약간 넓게 잡고 있는가?", "바벨을 무릎의 살짝 밑부분 지점까지만 내렸다가 올렸는가?", "동작 내내 바벨이 대퇴부에서 떨어지지 않고 가까이에 위치 하는가?", "운동 동작 시 척추 중립 자세를 유지 했는가?", "내리는 동작에서 무릎이 고정되어 있는가?", "들어 올렸을 때 상체를 과신전 하지 않도록 주의했는가?", "바벨을 들어 올렸을 때 호흡을 내쉬는가?"] },
+            { id: "ex_bk_3", category: "back", sub: "등", name: "벤트오버 바벨 로우", items: ["두 발을 어깨너비로 벌리고 스탠다드 오버핸드 그립으로 바벨을 잡았는가?", "상체는 수평보다 약간 높은 각도를 유지하는가?", "수축 시 견갑골이 서로 가까워지도록 어깨를 후방으로 모았는가?", "바벨을 당김과 동시에 상체를 세우지 않도록 주의했는가?", "허리는 곧게 펴져 있는가?", "바벨이 배꼽부위에 닿을 만큼 당겼을 때 호흡을 내쉬는가?"] },
+            { id: "ex_bk_4", category: "back", sub: "등", name: "언더그립 바벨 로우", items: ["두 발을 어깨너비로 벌리고 스탠다드 언더그립으로 바벨을 잡았는가?", "상체는 수평보다 약간 높은 각도를 유지했는가?", "수축 시 견갑골이 서로 가까워지도록 어깨를 후방으로 모았는가?", "허리는 곧게 펴져 있는가?", "바벨이 하복부에 닿을 만큼 당겼을 때 호흡을 내쉬는가?"] },
+            { id: "ex_bk_5", category: "back", sub: "등", name: "뉴트럴 그립 투암 덤벨 로우", items: ["두 발을 어깨너비로 벌리고 무릎을 살짝 굽힌 상태에서 상체를 45°-60° 정도 숙였는가?", "양 손에 덤벨을 뉴트럴 그립으로 잡고 옆구리 쪽으로 당겼는가?", "손목은 구부리지 않고 편 상태를 유지했는가?", "운동 동작 시 척추 중립 자세를 유지 했는가?", "덤벨을 당겼을 때 호흡을 내쉬는가?"] },
+            { id: "ex_bk_6", category: "back", sub: "등", name: "벤트오버 원암 덤벨 로우", items: ["벤치옆에 서서 한쪽 무릎과 손을 벤치 위에 올렸는가?", "다른 한 손은 뉴트럴 그립으로 덤벨을 잡았는가?", "덤벨을 옆구리 쪽으로 끌어 올리듯 들어 올렸는가?", "손목은 구부리지 않고 편 상태를 유지했는가?", "척추는 중립 자세를 유지했는가?", "덤벨을 당겼을 때 호흡을 내쉬는가?"] },
+            { id: "ex_bk_7", category: "back", sub: "등", name: "바벨 쉬러그", items: ["어깨너비로(어깨너비보다 약간 좁게) 서서 바벨을 어깨너비 스탠다드 오버 그립으로 잡았는가?", "등을 곧게 펴고 있는가?", "동작 시 팔꿈치를 너무 구부리지 않았는가?", "어깨를 끌어올렸을 때 호흡을 내쉬는가?"] },
+            { id: "ex_bk_8", category: "back", sub: "등", name: "덤벨 쉬러그", items: ["어깨너비로(어깨너비보다 약간 좁게) 서서 양손에 덤벨을 들고 있는가?", "등을 곧게 펴고 있는가?", "동작 시 팔꿈치를 너무 구부리지 않았는가?", "어깨를 끌어올렸을 때 호흡을 내쉬는가?"] },
+            { id: "ex_bk_9", category: "back", sub: "등", name: "바벨 굿모닝 엑서사이즈", items: ["양발은 내로우 스탠스로 평행하게 위치시켰는가?", "바벨을 승모근에 올리고 있는가?", "척추는 중립 자세를 유지했는가?", "상체를 숙였을 때 무릎을 살짝 구부리고 허리는 곧게 펼쳐져 있는가?", "시선은 전방을 주시하는가?", "올라올 때 호흡을 내쉬고 있는가?"] },
 
-            // 삼두 (Triceps)
-            { id: "ex23", category: "chest-triceps", sub: "삼두", name: "스탠딩 바벨 오버헤드 트라이셉스 익스텐션", items: ["두 발을 어깨너비로 벌리고 서서 몸의 중심을 잡았는가?", "허리는 곧게 세우며 펴고 있는가?", "양손의 간격을 어깨너비보다 좁게 하고 있는가?", "바벨을 머리 뒤쪽으로 내리고 있는가?", "바벨을 잡은 상완이 지면과 수직이 되도록 하는가?", "호흡은 바벨을 내릴 때 숨을 들이마시고 올릴 때 내뱉고 있는가?"] },
-            { id: "ex24", category: "chest-triceps", sub: "삼두", name: "스탠딩 원암 덤벨 오버헤드 트라이셉스 익스텐션", items: ["두 발을 어깨너비로 벌리고 서서 한 손으로 덤벨을 잡았는가?", "덤벨을 잡은 팔을 머리위로 곧게 들어 올렸는가?", "동작 중에 팔꿈치가 벌어지지 않도록 주의하였는가?", "팔꿈치를 펼 때 호흡을 내쉬는가?"] },
-            { id: "ex25", category: "chest-triceps", sub: "삼두", name: "라잉 바벨 트라이셉스 익스텐션", items: ["벤치에 누워 가슴은 들고 허리는 척추 중립을 유지하고 있는가?", "양손의 간격을 어깨너비보다 좁게 하고 있는가?", "바벨을 머리 쪽으로 내리고 있는가?", "바벨을 잡은 팔이 지면과 수직이 되도록 하는가?", "호흡은 바를 내릴 때 들이마시고 올릴 때 내뱉고 있는가?"] },
-            { id: "ex26", category: "chest-triceps", sub: "삼두", name: "덤벨 킥백", items: ["양손(또는 한손)에 덤벨을 잡고 상체를 45°이상 앞으로 굽혔는가?", "무릎은 살짝 구부리고 등은 곧게 편 상태를 유지했는가?", "덤벨을 잡은 팔은 90도로 굽혔는가?", "동작 내내 팔꿈치는 잘 고정되어 있는가?", "팔꿈치를 펼 때 호흡을 내쉬는가?"] },
-            { id: "ex27", category: "chest-triceps", sub: "삼두", name: "벤치 딥스", items: ["벤치에 앉아 두 손을 어깨 넓이 만큼 벌려서 잘 고정하였는가?", "벤치에서 몸통이 너무 떨어지지 않았는가?", "팔꿈치는 과도하게 벌어지지 않으면서 팔꿈치가 직각정도로 구부렸다 펴는가?", "운동 동작 시 승모근과 어깨가 과도하게 올라오지 않았는가?", "호흡은 팔꿈치를 굽히면서 들이마시고, 편 후에 내쉬었는가?"] },
-            { id: "ex28", category: "chest-triceps", sub: "전완", name: "바벨/덤벨 리스트 컬 시리즈", items: ["벤치에 앉아서 대퇴부 또는 벤치에 전완부를 고정했는가?", "언더그립(리스트 컬) 또는 오버그립(리버스 리스트 컬)을 목적에 맞게 잡았는가?", "운동 중 전완부가 들리거나 움직이지 않도록 고정했는가?", "호흡은 손목을 올릴 때 내쉬고, 내리면서 들이마시는가?"] },
+            // 이두 [cite: 2]
+            { id: "ex_bi_1", category: "biceps", sub: "이두", name: "스탠딩 바벨 컬", items: ["두 발을 어깨너비로 벌리고 서서 스탠다드 언더핸드그립으로 바벨을 잡았는가?", "팔꿈치가 어깨 뒤로 빠지지 않게 고정하고 있는가?", "바벨을 내릴 때 어깨가 움직이지 않고 팔꿈치가 펴졌는가?", "호흡은 바를 내릴 때 들이마시고 올릴 때 내쉬었는가?"] },
+            { id: "ex_bi_2", category: "biceps", sub: "이두", name: "스탠딩 리버스 바벨 컬", items: ["두 발을 어깨너비로 벌리고 서서 오버 그립으로 바벨을 잡았는가?", "바벨을 들어올릴 때 어깨가 움직이지 않고 팔꿈치가 몸통에 잘 고정되었는가?", "호흡은 바를 내릴 때 들이마시고 올릴 때 내쉬었는가?"] },
+            { id: "ex_bi_3", category: "biceps", sub: "이두", name: "스탠딩 덤벨 컬", items: ["두 발을 어깨너비로 벌리고 서서 스탠다드 언더핸드그립으로 덤벨을 잡았는가?", "팔꿈치가 어깨 뒤로 빠지지 않게 고정시켰는가?", "덤벨을 내릴 때 어깨를 움직이지 않고 팔꿈치를 폈는가?", "덤벨을 올릴 때 호흡을 내쉬고 있는가?"] },
+            { id: "ex_bi_4", category: "biceps", sub: "이두", name: "스탠딩 얼터네이트 덤벨 컬", items: ["두 발을 어깨너비로 벌리고 서서 스탠다드 언더핸드그립으로 덤벨을 잡았는가?", "양팔을 교대로 들어 올리는가?", "팔꿈치가 어깨 뒤로 빠지지 않도록 고정시켰는가?", "덤벨을 올릴 때 호흡을 내쉬고 내릴 때 들이마시고 있는가?"] },
+            { id: "ex_bi_5", category: "biceps", sub: "이두", name: "스탠딩 덤벨 해머 컬", items: ["두 발을 어깨너비로 벌리고 서서 덤벨을 뉴트럴 그립으로 잡았는가?", "팔꿈치가 어깨 뒤로 빠지지 않게 고정시켰는가?", "덤벨을 내릴 때 어깨를 움직이지 않고 팔꿈치를 폈는가?", "덤벨을 올릴 때 호흡을 내쉬고 내릴 때 들이마시고 있는가?"] },
+            { id: "ex_bi_6", category: "biceps", sub: "이두", name: "스탠딩 얼터네이트 해머 컬", items: ["두 발을 어깨너비로 벌리고 서서 덤벨을 뉴트럴 그립으로 잡았는가?", "양팔을 교대로 들어 올리는가?", "팔꿈치가 어깨 뒤로 빠지지 않도록 고정시켰는가?", "덤벨을 내릴 때 어깨를 움직이지 않고 팔꿈치를 폈는가?", "덤벨을 올릴 때 호흡을 내쉬고 내릴 때 들이마시고 있는가?"] },
+            { id: "ex_bi_7", category: "biceps", sub: "이두", name: "컨센트레이션 덤벨 컬", items: ["벤치에 앉아 뉴트럴 그립으로 덤벨을 잡았는가?", "덤벨을 잡은 손의 팔꿈치를 대퇴부 안쪽에 고정하였는가?", "반대편 손을 대퇴부에 고정시켜 상체를 안정적으로 지지하였는가?", "덤벨을 올릴 때 호흡을 내쉬고 있는가?"] },
 
-            // 어깨 (Shoulder)
-            { id: "ex29", category: "shoulder", sub: "어깨", name: "스탠딩 밀리터리 프레스", items: ["양 발을 어깨너비로 벌리고 서서 바벨을 어깨너비 부근으로 잡았는가?", "코어에 힘을 주고 균형을 잘 잡았는가?", "바벨은 수평을 유지하며 머리 위로 밀어 올렸는가?", "동작 내내 얼굴 가까이 바닥과 수직으로 들어 올렸는가?", "호흡은 바를 올렸을 때 내쉬고 내릴 때 들이마시는가?"] },
-            { id: "ex30", category: "shoulder", sub: "어깨", name: "스탠딩 비하인드 넥 프레스", items: ["어깨너비보다 넓은 간격으로 바벨을 잡았는가?", "바벨을 내릴 때 귓불의 위치까지 내렸는가?", "동작 시 명치를 들고 허리가 펴져 있는가?", "머리 뒤쪽 가까이 바닥과 수직으로 밀어 올리는가?", "호흡은 올릴 때 내쉬고 내릴 때 들이마시는가?"] },
-            { id: "ex31", category: "shoulder", sub: "어깨", name: "스탠딩 덤벨 숄더 프레스", items: ["어깨너비로 서서 양손에 덤벨을 들고 중심을 잡았는가?", "동작 내내 덤벨이 흔들리지 않고 균형있게 움직이는가?", "허리를 과도하게 뒤로 젖히지 않는가?", "호흡은 덤벨을 올렸을 때 내쉬고 내릴 때 들이마시는가?"] },
-            { id: "ex32", category: "shoulder", sub: "어깨", name: "스탠딩 바벨/덤벨 프런트 레이즈", items: ["두 발을 어깨너비로 서서 오버핸드 그립으로 중량을 잡았는가?", "상체를 곧게 펴고 정면을 주시하며 어깨 높이까지 들어 올리는가?", "허리를 반동으로 과도하게 뒤로 젖히지 않는가?", "호흡은 올릴 때 내쉬고 내리며 들이마시는가?"] },
-            { id: "ex33", category: "shoulder", sub: "어깨", name: "덤벨 벤트오버 레터럴 레이즈", items: ["양발을 약간 좁게 벌리고 무릎을 굽혀 상체를 바닥과 수평 가깝게 숙였는가?", "팔꿈치는 약간 굽힌 상태를 유지하고 제어하는가?", "과한 반동 없이 측/후면 삼각근의 고립 자세가 유지되는가?", "호흡은 올릴 때 내쉬고 내리며 들이마시는가?"] },
-            { id: "ex34", category: "shoulder", sub: "어깨", name: "바벨 업라이트 로우", items: ["두 발을 어깨너비로 서서 바벨을 오버핸드 그립으로 잡았는가?", "바벨을 들어 올렸을 때 팔꿈치가 손보다 항상 위에 위치하는가?", "바벨을 가슴 중앙이나 쇄골 높이까지 들어 올리는가?", "동작 내내 등을 곧게 펴고 호흡은 올릴 때 내쉬는가?"] },
+            // 삼두 [cite: 2]
+            { id: "ex_tri_1", category: "triceps", sub: "삼두", name: "스탠딩 바벨 오버헤드 트라이셉스 익스텐션", items: ["두 발을 어깨너비로 벌리고 서서 몸의 중심을 잡았는가?", "허리는 곧게 세우며 펴고 있는가?", "양손의 간격을 어깨너비보다 좁게 하고 있는가?", "바벨을 머리 뒤쪽으로 내리고 있는가?", "바벨을 잡은 상완이 지면과 수직이 되도록 하는가?", "호흡은 바벨을 내릴 때 숨을 들이마시고 올릴 때 내뱉고 있는가?"] },
+            { id: "ex_tri_2", category: "triceps", sub: "삼두", name: "스탠딩 원암 덤벨 오버헤드 트라이셉스 익스텐션", items: ["두 발을 어깨너비로 벌리고 서서 한 손으로 덤벨을 잡았는가?", "덤벨을 잡은 팔을 머리위로 곧게 들어 올렸는가?", "동작 중에 팔꿈치가 벌어지지 않도록 주의하였는가?", "팔꿈치를 펼 때 호흡을 내쉬는가?"] },
+            { id: "ex_tri_3", category: "triceps", sub: "삼두", name: "라잉 바벨 트라이셉스 익스텐션", items: ["벤치에 누워 가슴은 들고 허리는 척추 중립을 유지하고 있는가?", "양손의 간격을 어깨너비보다 좁게 하고 있는가?", "바벨을 머리 쪽으로 내리고 있는가?", "바벨을 잡은 팔이 지면과 수직이 되도록 하는가?", "호흡은 바를 내릴 때 들이마시고 올릴 때 내뱉고 있는가?"] },
+            { id: "ex_tri_4", category: "triceps", sub: "삼두", name: "덤벨 킥백", items: ["양손(또는 한손)에 덤벨을 잡고 상체를 45°이상 앞으로 굽혔는가?", "무릎은 살짝 구부리고 등은 곧게 편 상태를 유지했는가?", "덤벨을 잡은 팔은 90도로 굽혔는가?", "동작 내내 팔꿈치는 잘 고정되어 있는가?", "팔꿈치를 펼 때 호흡을 내쉬는가?"] },
+            { id: "ex_tri_5", category: "triceps", sub: "삼두", name: "벤치 딥스", items: ["벤치에 앉아 두 손을 어깨 넓이 만큼 벌려서 잘 고정하였는가?", "벤치에서 몸통이 너무 떨어지지 않았는가?", "팔꿈치는 과도하게 벌어지지 않으면서 팔꿈치가 직각정도로 구부렸다 펴는가?", "운동 동작 시 승모근과 어깨가 과도하게 올라오지 않았는가?", "호흡은 팔꿈치를 굽히면서 들이마시고, 편 후에 내쉬었는가?"] },
 
-            // 복부 (Abs)
-            { id: "ex35", category: "abs", sub: "복부", name: "크런치 & 리버스 크런치", items: ["바닥에 누워 무릎을 세우거나 90도로 굽혀 들었는가?", "상체를 30도 정도만 들거나(크런치) 골반을 말아 올리며 가슴 쪽으로 당기는가(리버스)?", "상체/골반을 수축해 올렸을 때 호흡을 내뱉는가?", "동작 중 허리의 과도한 부담을 제한하고 복근을 고립하는가?"] },
-            { id: "ex36", category: "abs", sub: "복부", name: "레그레이즈 & 싯업", items: ["다리를 90도 가까이 올리거나(레그레이즈) 상체를 완전히 일으켜 허벅지에 닿게 하는가(싯업)?", "레그레이즈 시 다리를 내릴 때 허리가 과하게 뜨지 않도록 통제하는가?", "수축 정점에서 호흡을 내쉬고 이완할 때 들이마시는가?"] },
-            { id: "ex37", category: "abs", sub: "복부", name: "시티드 니업 & 덤벨 사이드 밴드", items: ["벤치에 앉아 균형을 잡고 복부를 수축하며 무릎을 당기는가?", "사이드 밴드 시 척추를 측면으로 통제하며 기울였다가 옆구리를 수축해 세우는가?", "동작에 맞는 호흡을 수행하는가?"] },
+            // 전완 [cite: 2]
+            { id: "ex_fa_1", category: "forearm", sub: "전완", name: "바벨 리스트 컬", items: ["벤치에 앉아서 대퇴부에 전완부를 위치했는가? 또는 벤치에 전완부를 위치했는가?", "언더그립으로 바벨을 잡았는가?", "운동 중 전완부가 움직이지 않도록 고정되어 있는가?", "호흡은 손목을 올릴 때 내쉬고, 손목을 내리면서 들이마시는가?"] },
+            { id: "ex_fa_2", category: "forearm", sub: "전완", name: "바벨 리버스 리스트 컬", items: ["벤치에 앉아서 대퇴부에 전완부를 위치했는가? 또는 벤치에 전완부를 위치했는가?", "오버그립으로 바벨을 잡았는가?", "운동 중 전완부가 움직이지 않도록 고정되어 있는가?", "호흡은 손목을 올릴 때 내쉬고, 손목을 내리면서 들이마시는가?"] },
+            { id: "ex_fa_3", category: "forearm", sub: "전완", name: "덤벨 리스트 컬", items: ["벤치에 앉아서 대퇴부에 전완부를 위치했는가? 또는 벤치에 전완부를 위치했는가?", "언더그립으로 덤벨을 잡았는가?", "운동 중 전완부가 움직이지 않도록 고정되어 있는가?", "호흡은 손목을 올릴 때 내쉬고, 손목을 내리면서 들이마시는가?"] },
+            { id: "ex_fa_4", category: "forearm", sub: "전완", name: "덤벨 리버스 리스트 컬", items: ["벤치에 앉아서 대퇴부에 전완부를 위치했는가? 또는 벤치에 전완부를 위치했는가?", "오버그립으로 덤벨을 잡았는가?", "운동 중 전완부가 움직이지 않도록 고정되어 있는가?", "호흡은 손목을 올릴 때 내쉬고, 손목을 내리면서 들이마시는가?"] },
 
-            // 하체 (Legs)
-            { id: "ex38", category: "legs", sub: "하체", name: "바벨 백 스쿼트 & 프런트 스쿼트", items: ["두 발은 어깨너비(또는 약간 넓게) 스탠스를 견고하게 유지하는가?", "바벨을 목적에 맞게 승모근 상부(백) 또는 쇄골과 어깨(프런트)에 지탱했는가?", "허리를 꼿꼿이 세우고 대퇴가 바닥과 수평이 될 때까지 앉았는가?", "앉을 때 무릎이 발끝 방향을 향하며 뒤꿈치가 바닥에서 뜨지 않는가?", "일어설 때 반동을 제어하고 다 일어선 후 호흡을 내쉬는가?"] },
-            { id: "ex39", category: "legs", sub: "하체", name: "고블릿 & 불가리안 스플릿 스쿼트", items: ["덤벨을 가슴 앞에 고정하고 팔꿈치를 모았는가(고블릿)?", "한 발을 뒤쪽 벤치에 고정하고 양 무릎을 적절히 구부려 앉는가(불가리안)?", "양쪽 무릎이 안쪽으로 모이는 X자 다리 형태가 되지 않도록 주의하는가?", "허리가 과도하게 꺾이거나 굽지 않도록 제어하며 일어선 후 호흡을 내쉬는가?"] },
-            { id: "ex40", category: "legs", sub: "하체", name: "스티프 레그 데드리프트 & 런지(바벨/덤벨)", items: ["스티프 시 가슴을 펴고 허리 중립을 유지하며 엉덩이를 뒤로 빼고 내리는가?", "런지 수행 시 앞으로 내딛는 발바닥이 고정되며 무릎이 발끝을 과하게 넘지 않는가?", "등과 허리를 곧게 편 상태로 밸런스를 유지하며 교차로 실시하는가?", "올라오는 단계에서 명확하게 호흡을 내쉬는가?"] }
+            // 어깨 [cite: 1]
+            { id: "ex_sh_1", category: "shoulder", sub: "어깨", name: "스탠딩 밀리터리 프레스 (바벨 오버헤드 프레스)", items: ["양 발을 어깨너비로 벌리고 서서 바벨을 어깨너비(또는 그보다 약간 넓게) 잡았는가?", "코어에 힘을 주고 균형을 잘 잡았는가?", "바벨은 수평을 유지하며 머리 위로 밀어 올렸는가?", "동작 내내 얼굴 가까이 바닥과 수직으로 들어 올렸는가?", "호흡은 바를 올렸을 때 내쉬고 내릴 때 들이마시며 내렸는가?"] },
+            { id: "ex_sh_2", category: "shoulder", sub: "어깨", name: "스탠딩 비하인드 넥 프레스", items: ["어깨너비보다 넓은 간격으로 바벨을 잡았는가?", "바벨을 내릴 때 귓불의 위치까지 내렸는가?", "동작 시 명치를 들고 허리가 펴져 있는가?", "머리 뒤쪽 가까이 바닥과 수직으로 들어 올렸는가?", "호흡은 바를 올렸을 때 내쉬고, 들이마시며 내리는가?"] },
+            { id: "ex_sh_3", category: "shoulder", sub: "어깨", name: "스탠딩 덤벨 숄더 프레스", items: ["어깨너비로 서서 양손에 덤벨을 들고 중심을 잡았는가?", "동작 내내 덤벨이 균형있게 움직였는가?", "허리를 과도하게 뒤로 젖히지는 않았는가?", "호흡은 덤벨을 올렸을 때 내쉬고, 들이마시며 내리는가?"] },
+            { id: "ex_sh_4", category: "shoulder", sub: "어깨", name: "스탠딩 바벨 프런트 레이즈", items: ["두 발은 어깨너비(또는 약간 좁게)로 서서 바벨을 양손으로 오버핸드(손등이 앞) 그립으로 잡았는가?", "어깨(또는 약간 높게)까지 바벨을 들어 올렸는가?", "허리를 과도하게 뒤로 젖히지는 않았는가?", "호흡은 올렸을 때 내쉬고, 내리며 들이마시는가?"] },
+            { id: "ex_sh_5", category: "shoulder", sub: "어깨", name: "스탠딩 덤벨 프런트 레이즈", items: ["두 발은 어깨너비(또는 약간 좁게)로 서서 양 손에 덤벨을 잡았는가?", "위로 올리는 동작 시 상체를 곧게 펴고 시선은 정면을 유지했는가?", "어깨높이(또는 약간 높게)까지 덤벨을 들어 올렸는가?", "동작 내내 양 손의 덤벨이 균형 있게 움직였는가?", "호흡은 올릴 때 내쉬고 내리며 들이마시는가?"] },
+            { id: "ex_sh_6", category: "shoulder", sub: "어깨", name: "덤벨 벤트오버 레터럴 레이즈", items: ["양발은 어깨너비보다 약간 좁게 벌린 상태에서 무릎은 살짝 굽혔는가?", "양 손에 덤벨을 잡고 상체를 바닥과 수평(또는 약간 높은 각도)에서 시작하는가?", "팔꿈치는 약간 굽힌 상태를 유지하는가?", "동작내내 과한 반동없이 자세가 균형있게 유지되는가?", "호흡은 올릴 때 내쉬고 내리며 들이마시는가?"] },
+            { id: "ex_sh_7", category: "shoulder", sub: "어깨", name: "바벨 업라이트 로우", items: ["두 발은 어깨너비(또는 약간 좁게)로 서서 바벨을 오버핸드 그립으로 잡았는가?", "바벨을 들어 올렸을 때 팔꿈치는 손보다 항상 위에 위치하는가?", "바벨을 가슴 중앙이나 쇄골 높이까지 들어 올렸는가?", "동작내내 등을 곧게 펴고 있는가?", "호흡은 올릴 때 내쉬고 내리며 들이마시는가?"] },
+
+            // 복부 [cite: 1]
+            { id: "ex_ab_1", category: "abs", sub: "복부", name: "크런치", items: ["바닥에 누워 무릎을 세우고 발을 고정시켰는가?", "손은 머리 옆 또는 귀를 가볍게 잡고 시작하는가?", "상체를 30도 정도만 들어 올리는가?", "상체를 들어 올렸을 때 호흡을 내뱉고, 내릴 때 들이마시는가?"] },
+            { id: "ex_ab_2", category: "abs", sub: "복부", name: "레그레이즈", items: ["바닥에 누워 다리를 쭉 뻗고, 손은 엉덩이 아래나 옆에 놓았는가?", "다리를 바닥에 닿지 않게 내렸는가?", "다리를 90도 가까이 올렸는가?", "동작 내내 허리가 과하게 들리지 않았는가?", "다리를 내릴 때 호흡을 들이마시고, 들어 올렸을 때 호흡을 내쉬는가?"] },
+            { id: "ex_ab_3", category: "abs", sub: "복부", name: "싯업", items: ["누운 상태에서 무릎을 90도로 세웠는가?", "손은 머리 뒤 또는 가슴에 교차했는가?", "상체를 완전히 일으켜 양쪽 팔꿈치가 허벅지에 닿을 때까지 올라오는가?", "상체가 올라왔을 때 호흡을 내쉬고 내려갈 때 들이마시는가?"] },
+            { id: "ex_ab_4", category: "abs", sub: "복부", name: "시티드 니업", items: ["벤치나 바닥에 앉아 손으로 균형을 잡았는가?", "다리를 뻗었다가 복부를 수축하며 무릎을 가슴 쪽으로 당겼는가?", "무릎을 당길 때 호흡을 내쉬었는가?"] },
+            { id: "ex_ab_5", category: "abs", sub: "복부", name: "리버스 크런치", items: ["바닥에 누워 무릎을 90도로 굽혀 들어 올렸는가?", "골반을 말아 올리며 무릎을 가슴 쪽으로 당겼는가?", "골반을 올렸을 때 호흡을 내쉬었는가?"] },
+            { id: "ex_ab_6", category: "abs", sub: "복부", name: "덤벨 사이드 밴드", items: ["어깨 너비로 서서 한 손에 덤벨을 들고, 다른 한 손은 머리(또는 허리)에 놓았는가?", "덤벨을 든 쪽으로 천천히 기울이는가?", "몸을 다시 세우며 옆구리를 수축하는가?", "몸을 기울일 때는 호흡을 들이마시고, 몸을 세웠을 때 호흡을 내쉬었는가?"] },
+
+            // 하체 [cite: 1, 3, 6, 9]
+            { id: "ex_lg_1", category: "legs", sub: "하체", name: "바벨 백 스쿼트", items: ["두 발은 어깨너비(또는 약간 넓게)로 서있는가?", "바벨을 어깨보다 약간 넓게 잡고 승모근(상부)에 위치하게 했는가?", "엉덩이를 뒤로 빼고 앉을 때 무릎이 발끝 방향으로 향하는가?", "대퇴가 바닥과 수평이 될 때까지 앉았는가?", "뒤꿈치가 바닥에서 떨어지지 않도록 했는가?", "일어설 때 반동을 이용하거나 상체를 구부리지 않았는가?", "호흡은 앉기 전 들이마시고, 다 일어선 후 내쉬었는가?"] },
+            { id: "ex_lg_2", category: "legs", sub: "하체", name: "바벨 프런트 스쿼트", items: ["양발은 어깨너비(또는 약간 넓게)로 서 있는가?", "바벨은 쇄골과 어깨로 지탱하고 있는가?", "가슴과 팔꿈치를 들고 허리는 꼿꼿이 세우고 있는가?", "무릎이 발끝을 넘지 않고 있는가?", "시선은 정면을 주시하고 있는가?", "호흡은 앉기 전 들이마시고, 다 일어선 후 내쉬었는가?"] },
+            { id: "ex_lg_3", category: "legs", sub: "하체", name: "고블릿 스쿼트", items: ["두 발바닥은 바닥에 잘 고정되어 있는가?", "덤벨은 양손 위에 잘 고정되었으며, 팔꿈치는 벌어지지 않았는가?", "허리가 과도하게 꺾이지 않았는가?", "무릎과 발목은 몸 앞쪽으로 잘 구부러지고 있는가?", "양쪽 무릎이 몸 안쪽으로 모이지 않았는가? (X자 다리)", "호흡은 앉기 전 들이마시고, 다 일어선 후 내쉬었는가?"] },
+            { id: "ex_lg_4", category: "legs", sub: "하체", name: "바벨 불가리안 스플릿 스쿼트", items: ["바벨은 등 상부에 잘 고정되어 있는가?", "한 발은 바닥에, 다른 한 발은 벤치에 잘 고정되어 있는가?", "양쪽 무릎을 둘 다 적절히 구부려서 앉았는가?", "양쪽 무릎이 몸 안쪽으로 모이지 않았는가? (X자 다리)", "허리를 과도하게 꺾거나 굽혀지지 않았는가?", "호흡은 앉기 전 들이마시고, 다 일어선 후 내쉬었는가?"] },
+            { id: "ex_lg_5", category: "legs", sub: "하체", name: "덤벨 불가리안 스플릿 스쿼트", items: ["양손으로 덤벨을 적당한 간격으로 견고하게 잡았는가?", "한 발은 바닥에, 다른 한 발은 벤치에 잘 고정되어 있는가?", "양쪽 무릎을 둘 다 적절히 구부려서 앉았는가?", "양쪽 무릎이 몸 안쪽으로 모이지 않았는가? (X자 다리)", "허리를 과도하게 꺾거나 숙이지 않았는가?", "호흡은 앉기 전 들이마시고, 다 일어선 후 내쉬었는가?"] },
+            { id: "ex_lg_6", category: "legs", sub: "하체", name: "스티프 레그 데드리프트", items: ["두 발을 어깨너비(또는 약간 좁은) 간격으로 서 있는가?", "바벨을 오버핸드 그립으로 잡았는가?", "동작 내내 바벨이 대퇴부에 가까이 위치하는가?", "엎드릴 때 무게중심이 발 뒤꿈치에 있으면서 엉덩이를 뒤로 빼고 있는가?", "동작 시 가슴을 펴고 허리는 중립을 유지하는가?", "바벨을 내리며 들이마시고, 올라올 때 호흡을 내쉬었는가?"] },
+            { id: "ex_lg_7", category: "legs", sub: "하체", name: "바벨 런지", items: ["앞으로 내딛는 다리의 발바닥이 바닥에 닿도록 했는가?", "바벨이 승모근에 위치하고 있는가?", "무릎이 발끝보다 나오지 않게 하였는가?", "허리와 등을 곧게 편 상태로 유지하고 몸의 균형을 잡았는가?", "동작 시 발을 반드시 교차로 실시했는가?", "올라오는 단계에서 호흡을 내쉬었는가?"] },
+            { id: "ex_lg_8", category: "legs", sub: "하체", name: "덤벨 런지", items: ["앞으로 내딛는 다리의 발바닥이 바닥에 닿도록 했는가?", "덤벨을 양손에 들고 덤벨이 흔들리지 않게 유지하는가?", "무릎이 발끝보다 나오지 않게 하였는가?", "허리와 등을 곧게 편 상태로 유지하고 몸의 균형을 잡았는가?", "동작 시 발을 반드시 교차로 실시했는가?", "올라오는 단계에서 호흡을 내쉬었는가?"] }
         ];
 
         // State Management
         let checkedItems = JSON.parse(localStorage.getItem('kbbf_checked_items')) || {};
         let bookmarkedExercises = JSON.parse(localStorage.getItem('kbbf_bookmarks')) || {};
-        let currentTab = 'bookmark'; // 기본 진입을 헷갈리는 자세 모음으로 세팅하여 복습 용이성 극대화
+        let currentTab = 'bookmark';
+        
+        // 셔플된 인덱스 상태 저장 맵 (Key: tabId, Value: shuffled Array)
+        let shuffledMaps = {};
 
-        // DOM Render
-        function render() {
+        // Helper: Fisher-Yates Shuffle
+        function getShuffledList(array) {
+            let result = [...array];
+            for (let i = result.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [result[i], result[j]] = [result[j], result[i]];
+            }
+            return result;
+            updateProgressBar();
+        }
+
+        // 특정 부위 무작위 섞기 작동 액션
+        function shuffleCurrentTab() {
+            let baseList = [];
+            if (currentTab === 'all') {
+                baseList = exerciseData;
+            } else if (currentTab === 'bookmark') {
+                baseList = exerciseData.filter(ex => bookmarkedExercises[ex.id]);
+            } else {
+                baseList = exerciseData.filter(ex => ex.category === currentTab);
+            }
+
+            if (baseList.length <= 1) {
+                alert("섞을 종목이 부족합니다.");
+                return;
+            }
+
+            shuffledMaps[currentTab] = getShuffledList(baseList);
+            render(true); // 셔플 전용 플래그 전송
+        }
+
+        // DOM Render Engine
+        function render(isShuffleAction = false) {
             const container = document.getElementById('content-container');
             container.innerHTML = '';
 
-            // Filter logic
-            let filtered = [];
-            if (currentTab === 'all') {
-                filtered = exerciseData;
-            } else if (currentTab === 'bookmark') {
-                filtered = exerciseData.filter(ex => bookmarkedExercises[ex.id]);
+            let targetList = [];
+
+            // 셔플 이력이 있고 현재 탭이 유지되는 상황일 때 매핑 사용
+            if (isShuffleAction && shuffledMaps[currentTab]) {
+                targetList = shuffledMaps[currentTab];
             } else {
-                filtered = exerciseData.filter(ex => ex.category === currentTab);
+                // 일반적인 내비게이션 전환 시 기본 배열 규칙 준수
+                if (currentTab === 'all') {
+                    targetList = exerciseData;
+                } else if (currentTab === 'bookmark') {
+                    targetList = exerciseData.filter(ex => bookmarkedExercises[ex.id]);
+                } else {
+                    targetList = exerciseData.filter(ex => ex.category === currentTab);
+                }
+                // 새로운 탭 진입 시 기존 셔플 기록 소멸 처리
+                delete shuffledMaps[currentTab];
             }
 
-            // Empty state for bookmarks
-            if (currentTab === 'bookmark' && filtered.length === 0) {
+            // Empty state handler for Bookmark tab
+            if (currentTab === 'bookmark' && targetList.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-12 px-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
                         <span class="text-4xl block mb-2">📌</span>
                         <p class="text-sm font-bold text-slate-500">헷갈리는 자세 카드가 비어있습니다.</p>
-                        <p class="text-xs text-slate-400 mt-1">다른 탭에서 카드 우측의 핀 버튼을 눌러 추가하세요!</p>
+                        <p class="text-xs text-slate-400 mt-1">다른 부위별 탭에서 우측 상단의 핀 버튼을 눌러보세요.</p>
                     </div>
                 `;
                 updateProgressBar();
                 return;
             }
 
-            filtered.forEach(ex => {
+            targetList.forEach(ex => {
                 const card = document.createElement('section');
                 card.className = "bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-4 space-y-3 relative";
                 
                 const isBookmarked = bookmarkedExercises[ex.id] ? true : false;
 
-                // Card Header + Bookmark Pin Button
                 card.innerHTML = `
                     <div class="flex justify-between items-center pr-8">
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                                ex.category === 'back-biceps' ? 'bg-amber-100 text-amber-700' : 
-                                ex.category === 'chest-triceps' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
-                            }">${ex.sub}</span>
+                            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700">${ex.sub}</span>
                             <h2 class="text-sm font-bold text-slate-900">${ex.name}</h2>
                         </div>
                     </div>
@@ -162,7 +222,6 @@
                     <div class="h-[1px] bg-slate-100 w-full"></div>
                 `;
 
-                // Checklist Items
                 const ul = document.createElement('ul');
                 ul.className = "space-y-2.5";
 
@@ -204,17 +263,25 @@
                 checkedItems[id] = true;
             }
             localStorage.setItem('kbbf_checked_items', JSON.stringify(checkedItems));
-            render();
+            
+            // 셔플된 화면 상태 유지하면서 리렌더링하기 위해 맵 체크
+            const dynamicFlag = shuffledMaps[currentTab] ? true : false;
+            render(dynamicFlag);
         }
 
         function toggleBookmark(exId) {
             if (bookmarkedExercises[exId]) {
                 delete bookmarkedExercises[exId];
+                if(shuffledMaps[currentTab]) {
+                    shuffledMaps[currentTab] = shuffledMaps[currentTab].filter(e => e.id !== exId);
+                }
             } else {
                 bookmarkedExercises[exId] = true;
             }
             localStorage.setItem('kbbf_bookmarks', JSON.stringify(bookmarkedExercises));
-            render();
+            
+            const dynamicFlag = shuffledMaps[currentTab] ? true : false;
+            render(dynamicFlag);
         }
 
         function switchTab(tabId) {
@@ -234,7 +301,7 @@
                     }
                 }
             });
-            render();
+            render(false); // 탭 전환 시 셔플 리셋을 기본으로 설계
         }
 
         function updateProgressBar() {
@@ -254,16 +321,17 @@
         }
 
         function resetAllProgress() {
-            if (confirm('심사 체크 및 📌북마크 내역을 전부 초기화할까요?')) {
+            if (confirm('모든 체크 및 📌북마크 기록을 공장 초기화할까요?')) {
                 checkedItems = {};
                 bookmarkedExercises = {};
+                shuffledMaps = {};
                 localStorage.removeItem('kbbf_checked_items');
                 localStorage.removeItem('kbbf_bookmarks');
                 render();
             }
         }
 
-        // Init Layout Button Style Ajustment
+        // Entry Point
         switchTab('bookmark');
     </script>
 </body>
